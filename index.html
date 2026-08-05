@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 30-Baht Jianghu Wallet Guardian Sect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Prompt', sans-serif; } </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+    <script>
+        const SCRIPT_URL = "https://script.google.com/a/macros/pcschool.ac.th/s/AKfycbyUoxu6BMmUhRn5Q1uUxD7_RZvsWpuhGNcdFgnttUmTOH4DwEL37Ctok__f-YZ7RVFfwA/exec";
+    </script>
+    <header class="bg-gradient-to-r from-red-600 to-amber-600 text-white p-6 shadow-md rounded-b-3xl">
+        <div class="max-w-md mx-auto text-center">
+            <span class="bg-white/20 text-xs px-3 py-1 rounded-full uppercase tracking-wider">สำนักพิทักษ์กระเป๋าเงิน ยุทธภพ 30 บาท 🇨🇳</span>
+            <h1 class="text-2xl font-bold mt-2">เงินท้องพระคลังแก๊งเรา</h1>
+            <p class="text-white/90 text-sm mt-1">เป้าหมาย: 3 ส.ค. 2569 ถึง 1 ธ.ค. 2570</p>
+            <div class="mt-5 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
+                <p class="text-xs text-white/80">ยอดเงินรวมทั้งสำนักตอนนี้</p>
+                <h2 id="total-fund" class="text-3xl font-bold mt-1">0 บาท</h2>
+                <div class="w-full bg-white/20 h-2 rounded-full mt-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-yellow-300 h-full w-0 transition-all duration-500"></div>
+                </div>
+                <p id="progress-text" class="text-xs text-white/80 mt-1">จากเป้าหมายรวม 54,000 บาท</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 mt-6">
+        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🔄 กำลังซิงค์ข้อมูลกับสำนักกลาง...</div>
+
+        <!-- 🔔 ระบบแจ้งเตือนสถานะรายวัน -->
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-sm">
+            <div class="flex items-center space-x-2 mb-2">
+                <span class="text-lg">📢</span>
+                <h3 class="font-semibold text-amber-800 text-sm">ประกาศสถานะการจ่ายเงินวันนี้ (<span id="today-date-str">--</span>)</h3>
+            </div>
+            <div id="alert-content" class="text-xs text-amber-700 space-y-1">กำลังโหลด...</div>
+        </div>
+
+        <!-- เลือกสมาชิก -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+            <h2 class="font-semibold text-slate-700 mb-3">🔍 เลือกจอมยุทธ์เพื่อเช็ค/ติ๊กรายวัน</h2>
+            <select id="member-select" onchange="renderDailyTracker()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                <option value="0">เจ้าชายจ้าวอี้พี</option>
+                <option value="1">เจ้าหญิงจ้าวอวี้บูม</option>
+                <option value="2">พระสนมเอกจ้าวซีแตงโม</option>
+                <option value="3">ท่านอ๋องจ้าวหลงเพ้ด</option>
+                <option value="4">องค์หญิงจ้าวซินเอนเจ</option>
+            </select>
+            <div class="mt-4 flex justify-between items-center bg-orange-50 p-3 rounded-xl border border-orange-100 text-sm">
+                <div>
+                    <p class="text-slate-600">ยอดสะสมส่วนตัว:</p>
+                    <p class="font-bold text-orange-600 text-lg" id="selected-member-total">0 บาท</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-slate-600">ชำระแล้ว:</p>
+                    <p class="font-semibold text-slate-800" id="selected-member-days">0 วัน</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนกดติ๊กรายวัน -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-semibold text-slate-700">📅 ตารางติ๊กรายวัน (วันละ 30 ฿)</h2>
+                <span id="current-selected-name" class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-medium">เจ้าชายจ้าวอี้พี</span>
+            </div>
+            <div class="text-xs text-slate-400 mb-3">กดติ๊กแล้วข้อมูลจะบันทึกลงชีทกลางทันที เปิดเครื่องไหนก็เห็นตรงกัน</div>
+            <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 border border-slate-100 rounded-xl bg-slate-50"></div>
+        </div>
+
+        <!-- สรุปภาพรวมรายบุคคล -->
+        <h2 class="font-semibold text-slate-700 mb-3">👑 สรุปยอดรวมทุกพระองค์ในสำนัก</h2>
+        <div class="space-y-3" id="member-summary-list"></div>
+    </main>
+
+    <script>
+        const startDate = new Date(2026, 7, 3);   
+        const endDate = new Date(2027, 11, 1);    
+        const dailyRate = 30;
+        const targetTotal = 54000;
+        const oneDayTime = 1000 * 60 * 60 * 24;
+        const totalProjectDays = Math.floor((endDate - startDate) / oneDayTime) + 1;
+
+        let members = [
+            { name: "เจ้าชายจ้าวอี้พี", paidDays: {} },
+            { name: "เจ้าหญิงจ้าวอวี้บูม", paidDays: {} },
+            { name: "พระสนมเอกจ้าวซีแตงโม", paidDays: {} },
+            { name: "ท่านอ๋องจ้าวหลงเพ้ด", paidDays: {} },
+            { name: "องค์หญิงจ้าวซินเอนเจ", paidDays: {} }
+        ];
+
+        async function fetchSheetData() {
+            try {
+                let res = await fetch(SCRIPT_URL);
+                let rows = await res.json();
+                if (rows && rows.length > 0) {
+                    rows.forEach((row, mIdx) => {
+                        if (members[mIdx] && row.length > 0) {
+                            members[mIdx].paidDays = {};
+                            for (let i = 0; i < row.length; i++) {
+                                if (row[i] === true || row[i] === "TRUE" || row[i] === 1) {
+                                    members[mIdx].paidDays[i] = true;
+                                }
+                            }
+                        }
+                    });
+                }
+                document.getElementById('sync-status').innerText = "🟢 ซิงค์ข้อมูลกับสำนักกลางเรียบร้อย";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('sync-status').innerText = "🔴 ดึงข้อมูลจากส่วนกลางไม่สำเร็จ";
+            }
+            updateUI();
+        }
+
+        async function saveSheetData() {
+            document.getElementById('sync-status').innerText = "💾 กำลังบันทึกข้อมูลลงสำนักกลาง...";
+            
+            let payload = members.map(m => {
+                let rowData = [];
+                for (let i = 0; i < totalProjectDays; i++) {
+                    rowData.push(m.paidDays[i] ? true : false);
+                }
+                return rowData;
+            });
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลสำเร็จ (รีเฟรชเครื่องอื่นเห็นทันที)";
+            } catch (err) {
+                console.error(err);
+                document.getElementById('sync-status').innerText = "🔴 บันทึกข้อมูลไม่สำเร็จ";
+            }
+        }
+
+        function formatDateString(dateObj) {
+            let options = { day: 'numeric', month: 'short', year: '2-digit' };
+            return dateObj.toLocaleDateString('th-TH', options);
+        }
+
+        function getTodayIndex() {
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            let start = new Date(startDate);
+            start.setHours(0,0,0,0);
+            let diff = Math.floor((today - start) / oneDayTime);
+            if (diff < 0) return 0;
+            if (diff >= totalProjectDays) return totalProjectDays - 1;
+            return diff;
+        }
+
+        function updateUI() {
+            let grandTotal = 0;
+            let summaryHTML = '';
+            let todayIdx = getTodayIndex();
+            let todayDateObj = new Date(startDate.getTime() + (todayIdx * oneDayTime));
+            
+            document.getElementById('today-date-str').innerText = formatDateString(todayDateObj);
+
+            let unpaidTodayList = [];
+
+            members.forEach((m, index) => {
+                let paidCount = Object.keys(m.paidDays).filter(k => m.paidDays[k]).length;
+                let memberTotal = paidCount * dailyRate;
+                grandTotal += memberTotal;
+
+                if (!m.paidDays[todayIdx]) {
+                    unpaidTodayList.push(m.name);
+                }
+
+                summaryHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center font-bold text-orange-600">${m.name.charAt(4)}</div>
+                            <div>
+                                <h4 class="font-medium text-sm">${m.name}</h4>
+                                <p class="text-xs text-slate-500">จ่ายแล้ว ${paidCount} วัน (${memberTotal.toLocaleString()} บาท)</p>
+                            </div>
+                        </div>
+                        <button onclick="selectMemberAndScroll(${index})" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-full font-medium hover:bg-slate-200 transition">จัดการรายวัน</button>
+                    </div>
+                `;
+            });
+
+            let alertHtml = '';
+            if (unpaidTodayList.length === 0) {
+                alertHtml = `<p class="text-green-600 font-medium">🎉 ยอดเยี่ยม! วันนี้ทุกพระองค์ชำระส่วยครบหมดแล้ว!</p>`;
+            } else {
+                alertHtml = `<p class="text-red-600 font-medium">⚠️ สมาชิกที่ยังไม่ได้จ่ายของวันนี้ (${todayIdx + 1}):</p>
+                             <p class="font-semibold text-slate-700 mt-0.5">${unpaidTodayList.join(', ')}</p>`;
+            }
+            document.getElementById('alert-content').innerHTML = alertHtml;
+
+            document.getElementById('total-fund').innerText = grandTotal.toLocaleString() + ' บาท';
+            document.getElementById('member-summary-list').innerHTML = summaryHTML;
+            let percent = (grandTotal / targetTotal) * 100;
+            document.getElementById('progress-bar').style.width = Math.min(percent, 100) + '%';
+            document.getElementById('progress-text').innerText = `จากเป้าหมายรวม ${targetTotal.toLocaleString()} บาท (ระยะเวลาเก็บ ${totalProjectDays} วัน)`;
+
+            renderDailyTracker();
+        }
+
+        function selectMemberAndScroll(index) {
+            document.getElementById('member-select').value = index;
+            renderDailyTracker();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderDailyTracker() {
+            let memberIndex = document.getElementById('member-select').value;
+            let m = members[memberIndex];
+            document.getElementById('current-selected-name').innerText = m.name;
+
+            let gridHTML = '';
+            let paidCount = 0;
+
+            for (let i = 0; i < totalProjectDays; i++) {
+                let currentDayDate = new Date(startDate.getTime() + (i * oneDayTime));
+                let isPaid = m.paidDays[i] || false;
+                if (isPaid) paidCount++;
+                let dateShortStr = `${currentDayDate.getDate()}/${currentDayDate.getMonth() + 1}`;
+
+                if (isPaid) {
+                    gridHTML += `<button onclick="toggleDay(${memberIndex}, ${i})" class="p-2 text-xs font-medium rounded-xl bg-green-500 text-white shadow-sm transition transform active:scale-95" title="${formatDateString(currentDayDate)}">
+                        <div>${i+1}</div>
+                        <div class="text-[10px] opacity-90">${dateShortStr}</div>
+                    </button>`;
+                } else {
+                    gridHTML += `<button onclick="toggleDay(${memberIndex}, ${i})" class="p-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition transform active:scale-95" title="${formatDateString(currentDayDate)}">
+                        <div>${i+1}</div>
+                        <div class="text-[10px] text-slate-400">${dateShortStr}</div>
+                    </button>`;
+                }
+            }
+
+            document.getElementById('daily-grid').innerHTML = gridHTML;
+            document.getElementById('selected-member-total').innerText = (paidCount * dailyRate).toLocaleString() + ' บาท';
+            document.getElementById('selected-member-days').innerText = `${paidCount} วัน / (${totalProjectDays} วัน)`;
+        }
+
+        function toggleDay(memberIndex, dayIndex) {
+            let m = members[memberIndex];
+            m.paidDays[dayIndex] = !m.paidDays[dayIndex];
+            updateUI();
+            saveSheetData(); // บันทึกข้อมูลลงชีทกลางทันที
+        }
+
+        // โหลดข้อมูลกลางทันทีเมื่อเปิดเว็บ
+        fetchSheetData();
+    </script>
+</body>
+</html>

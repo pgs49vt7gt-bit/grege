@@ -27,7 +27,7 @@
         </div>
 
         <!-- Sync Status -->
-        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🟢 ระบบพร้อมใช้งาน (บันทึกอัตโนมัติ)</div>
+        <div id="sync-status" class="text-center text-xs text-emerald-400 mb-4 font-medium">🟢 ระบบบันทึกอัตโนมัติพร้อมใช้งาน</div>
 
         <!-- Member Selector & Tracker -->
         <div class="bg-slate-800 border border-slate-700/60 rounded-2xl p-4 shadow-lg mb-6">
@@ -58,7 +58,6 @@
                 <h3 class="text-sm font-semibold text-slate-200">📅 ตารางสะสมรายวัน (วันละ 30 บาท)</h3>
                 <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full">กดติ๊กเพื่อบันทึก</span>
             </div>
-            <div class="text-[11px] text-slate-400 mb-3">ข้อมูลจะบันทึกลงเครื่องทันที รีเฟรชไม่หาย</div>
             <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 bg-slate-900/50 rounded-xl border border-slate-700/50"></div>
         </div>
 
@@ -70,7 +69,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = "jianghu_wallet_data_v4";
+        const STORAGE_KEY = "jianghu_wallet_data_v5";
         const startDate = new Date(2026, 7, 3);
         const endDate = new Date(2027, 11, 1);
         const dailyRate = 30;
@@ -153,7 +152,6 @@
             document.getElementById('member-total').innerText = (paidCount * dailyRate).toLocaleString() + ' บาท';
             document.getElementById('member-days').innerText = `${paidCount} / ${totalDays} วัน`;
 
-            // Summary & Grand Total
             let grandTotal = 0;
             let summaryHtml = '';
             membersData.forEach((m, idx) => {

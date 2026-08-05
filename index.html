@@ -27,7 +27,7 @@
         </div>
 
         <!-- Sync Status -->
-        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🔄 กำลังเชื่อมต่อฐานข้อมูลสำนัก...</div>
+        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🟢 ระบบพร้อมใช้งาน (บันทึกอัตโนมัติ)</div>
 
         <!-- Member Selector & Tracker -->
         <div class="bg-slate-800 border border-slate-700/60 rounded-2xl p-4 shadow-lg mb-6">
@@ -58,7 +58,7 @@
                 <h3 class="text-sm font-semibold text-slate-200">📅 ตารางสะสมรายวัน (วันละ 30 บาท)</h3>
                 <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full">กดติ๊กเพื่อบันทึก</span>
             </div>
-            <div class="text-[11px] text-slate-400 mb-3">ข้อมูลจะอัปเดตตรงกันทุกเครื่องทันทีโดยอัตโนมัติ</div>
+            <div class="text-[11px] text-slate-400 mb-3">ข้อมูลจะบันทึกลงเครื่องทันที รีเฟรชไม่หาย</div>
             <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 bg-slate-900/50 rounded-xl border border-slate-700/50"></div>
         </div>
 
@@ -70,8 +70,7 @@
     </div>
 
     <script>
-        // ใช้ LocalStorage ร่วมกับระบบจำลองส่วนกลาง เพื่อให้ไม่หายและกดใช้งานได้ทันที 100%
-        const STORAGE_KEY = "jianghu_wallet_data_v2";
+        const STORAGE_KEY = "jianghu_wallet_data_v3";
         const startDate = new Date(2026, 7, 3);
         const endDate = new Date(2027, 11, 1);
         const dailyRate = 30;
@@ -80,11 +79,11 @@
         const totalDays = Math.floor((endDate - startDate) / oneDayTime) + 1;
 
         let membersData = [
-            { name: "เจ้าชายจ้าวอี้พี", days: {} },
-            { name: "เจ้าหญิงจ้าวอวี้บูม", days: {} },
-            { name: "พระสนมเอกจ้าวซีแตงโม", days: {} },
-            { name: "ท่านอ๋องจ้าวหลงเพ้ด", days: {} },
-            { name: "องค์หญิงจ้าวซินเอนเจ", days: {} }
+            { name: "เจ้าชายจ้าวอี้พี", paidDays: {} },
+            { name: "เจ้าหญิงจ้าวอวี้บูม", paidDays: {} },
+            { name: "พระสนมเอกจ้าวซีแตงโม", paidDays: {} },
+            { name: "ท่านอ๋องจ้าวหลงเพ้ด", paidDays: {} },
+            { name: "องค์หญิงจ้าวซินเอนเจ", paidDays: {} }
         ];
 
         function loadData() {
@@ -92,42 +91,35 @@
                 let saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
                     let parsed = JSON.parse(saved);
-                    parsed.forEach((arr, mIdx) => {
-                        if (membersData[mIdx] && Array.isArray(arr)) {
-                            membersData[mIdx].days = {};
-                            arr.forEach((val, dIdx) => {
-                                if (val) membersData[mIdx].days[dIdx] = true;
-                            });
+                    parsed.forEach((mObj, mIdx) => {
+                        if (membersData[mIdx] && mObj.paidDays) {
+                            membersData[mIdx].paidDays = mObj.paidDays;
                         }
                     });
                 }
-                document.getElementById('sync-status').innerText = "🟢 พร้อมใช้งาน (บันทึกในเครื่องนี้เรียบร้อย)";
             } catch (e) {
-                document.getElementById('sync-status').innerText = "🔴 โหลดข้อมูลไม่สำเร็จ";
+                console.error(e);
             }
             renderApp();
         }
 
         function saveData() {
             try {
-                let payload = membersData.map(m => {
-                    let row = [];
-                    for (let i = 0; i < totalDays; i++) {
-                        row.push(m.days[i] ? 1 : 0);
-                    }
-                    return row;
-                });
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลลงเครื่องสำเร็จ";
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(membersData));
             } catch (e) {
-                document.getElementById('sync-status').innerText = "🔴 บันทึกไม่สำเร็จ";
+                console.error(e);
             }
         }
 
         function toggleDay(mIdx, dIdx) {
-            membersData[mIdx].days[dIdx] = !membersData[mIdx].days[dIdx];
-            renderApp();
+            let member = membersData[mIdx];
+            if (member.paidDays[dIdx]) {
+                delete member.paidDays[dIdx];
+            } else {
+                member.paidDays[dIdx] = true;
+            }
             saveData();
+            renderApp();
         }
 
         function renderApp() {
@@ -138,7 +130,7 @@
             let paidCount = 0;
 
             for (let i = 0; i < totalDays; i++) {
-                let isChecked = currentMember.days[i] || false;
+                let isChecked = currentMember.paidDays[i] || false;
                 if (isChecked) paidCount++;
                 let d = new Date(startDate.getTime() + (i * oneDayTime));
                 let dateStr = `${d.getDate()}/${d.getMonth()+1}`;
@@ -163,7 +155,7 @@
             let grandTotal = 0;
             let summaryHtml = '';
             membersData.forEach((m, idx) => {
-                let count = Object.values(m.days).filter(Boolean).length;
+                let count = Object.keys(m.paidDays).length;
                 let total = count * dailyRate;
                 grandTotal += total;
 

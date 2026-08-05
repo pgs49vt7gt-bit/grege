@@ -10,7 +10,8 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFG8e60EbTvCwRfcqyvzWDY55IjNfRTDbslAekPz-DIFShRBRUjquLXcBzGf6_yZ3i/exec";
+        const BIN_ID = "6a732607da38895dfebcb905";
+        const API_KEY = "$2a$10$fQnZlbQKkoxfdtk08DmncueScQXVc4rd6L.FEZtKoMI4BZgky7n5m";
     </script>
     <header class="bg-gradient-to-r from-red-600 to-amber-600 text-white p-6 shadow-md rounded-b-3xl">
         <div class="max-w-md mx-auto text-center">
@@ -68,7 +69,7 @@
                 <h2 class="font-semibold text-slate-700">📅 ตารางติ๊กรายวัน (วันละ 30 ฿)</h2>
                 <span id="current-selected-name" class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-medium">เจ้าชายจ้าวอี้พี</span>
             </div>
-            <div class="text-xs text-slate-400 mb-3">กดติ๊กแล้วข้อมูลจะบันทึกลงชีทกลางทันที เปิดเครื่องไหนก็เห็นตรงกัน</div>
+            <div class="text-xs text-slate-400 mb-3">กดติ๊กแล้วข้อมูลจะบันทึกลงระบบกลางทันที เปิดเครื่องไหนก็เห็นตรงกัน</div>
             <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 border border-slate-100 rounded-xl bg-slate-50"></div>
         </div>
 
@@ -95,14 +96,17 @@
 
         async function fetchSheetData() {
             try {
-                let res = await fetch(SCRIPT_URL);
-                let rows = await res.json();
-                if (rows && rows.length > 0) {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                let json = await res.json();
+                let rows = json.record;
+                if (rows && Array.isArray(rows)) {
                     rows.forEach((row, mIdx) => {
-                        if (members[mIdx] && row.length > 0) {
+                        if (members[mIdx] && Array.isArray(row)) {
                             members[mIdx].paidDays = {};
                             for (let i = 0; i < row.length; i++) {
-                                if (row[i] === true || row[i] === "TRUE" || row[i] === 1) {
+                                if (row[i] === true || row[i] === 1 || row[i] === "TRUE") {
                                     members[mIdx].paidDays[i] = true;
                                 }
                             }
@@ -123,16 +127,18 @@
             let payload = members.map(m => {
                 let rowData = [];
                 for (let i = 0; i < totalProjectDays; i++) {
-                    rowData.push(m.paidDays[i] ? true : false);
+                    rowData.push(m.paidDays[i] ? 1 : 0);
                 }
                 return rowData;
             });
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
                     body: JSON.stringify(payload)
                 });
                 document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลสำเร็จ (รีเฟรชเครื่องอื่นเห็นทันที)";
@@ -251,10 +257,9 @@
             let m = members[memberIndex];
             m.paidDays[dayIndex] = !m.paidDays[dayIndex];
             updateUI();
-            saveSheetData(); // บันทึกข้อมูลลงชีทกลางทันที
+            saveSheetData(); 
         }
 
-        // โหลดข้อมูลกลางทันทีเมื่อเปิดเว็บ
         fetchSheetData();
     </script>
 </body>

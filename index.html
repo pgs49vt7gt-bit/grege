@@ -3,264 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The 30-Baht Jianghu Wallet Guardian Sect</title>
+    <title>สำนักพิทักษ์กระเป๋าเงิน 30 บาท</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style> body { font-family: 'Prompt', sans-serif; } </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
-    <script>
-        const BIN_ID = "6a732607da38895dfebcb905";
-        const API_KEY = "$2a$10$k0sfCJCF.onaK6z2MZudBudRR6xrtV8z510hg0v0EwkeTIwmmNVz.";
-    </script>
-    <header class="bg-gradient-to-r from-red-600 to-amber-600 text-white p-6 shadow-md rounded-b-3xl">
-        <div class="max-w-md mx-auto text-center">
-            <span class="bg-white/20 text-xs px-3 py-1 rounded-full uppercase tracking-wider">สำนักพิทักษ์กระเป๋าเงิน ยุทธภพ 30 บาท 🇨🇳</span>
-            <h1 class="text-2xl font-bold mt-2">เงินท้องพระคลังแก๊งเรา</h1>
-            <p class="text-white/90 text-sm mt-1">เป้าหมาย: 3 ส.ค. 2569 ถึง 1 ธ.ค. 2570</p>
-            <div class="mt-5 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
-                <p class="text-xs text-white/80">ยอดเงินรวมทั้งสำนักตอนนี้</p>
-                <h2 id="total-fund" class="text-3xl font-bold mt-1">0 บาท</h2>
-                <div class="w-full bg-white/20 h-2 rounded-full mt-3 overflow-hidden">
-                    <div id="progress-bar" class="bg-yellow-300 h-full w-0 transition-all duration-500"></div>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+    <div class="max-w-md mx-auto p-4">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-3xl p-6 shadow-xl mb-6 text-center border border-emerald-500/30">
+            <span class="bg-black/20 text-emerald-200 text-xs px-3 py-1 rounded-full uppercase tracking-wider">🇨🇳 สำนักพิทักษ์กระเป๋าเงิน</span>
+            <h1 class="text-2xl font-bold mt-2 text-white">คลังสมบัติยุทธภพ 30 บาท</h1>
+            <p class="text-xs text-emerald-100 mt-1">เป้าหมายรวม: 54,000 บาท (3 ส.ค. 69 - 1 ธ.ค. 70)</p>
+            
+            <div class="mt-4 bg-black/30 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                <p class="text-xs text-slate-300">ยอดเงินรวมทั้งสำนักตอนนี้</p>
+                <h2 id="total-fund" class="text-3xl font-bold text-emerald-400 mt-1">0 บาท</h2>
+                <div class="w-full bg-white/10 h-2.5 rounded-full mt-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-emerald-400 h-full w-0 transition-all duration-500"></div>
                 </div>
-                <p id="progress-text" class="text-xs text-white/80 mt-1">จากเป้าหมายรวม 54,000 บาท</p>
+                <p id="progress-text" class="text-xs text-slate-400 mt-1">0% ของเป้าหมาย</p>
             </div>
         </div>
-    </header>
 
-    <main class="max-w-md mx-auto px-4 mt-6">
-        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🔄 กำลังซิงค์ข้อมูลกับสำนักกลาง...</div>
+        <!-- Sync Status -->
+        <div id="sync-status" class="text-center text-xs text-slate-400 mb-4">🔄 กำลังเชื่อมต่อฐานข้อมูลสำนัก...</div>
 
-        <!-- 🔔 ระบบแจ้งเตือนสถานะรายวัน -->
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-sm">
-            <div class="flex items-center space-x-2 mb-2">
-                <span class="text-lg">📢</span>
-                <h3 class="font-semibold text-amber-800 text-sm">ประกาศสถานะการจ่ายเงินวันนี้ (<span id="today-date-str">--</span>)</h3>
-            </div>
-            <div id="alert-content" class="text-xs text-amber-700 space-y-1">กำลังโหลด...</div>
-        </div>
-
-        <!-- เลือกสมาชิก -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
-            <h2 class="font-semibold text-slate-700 mb-3">🔍 เลือกจอมยุทธ์เพื่อเช็ค/ติ๊กรายวัน</h2>
-            <select id="member-select" onchange="renderDailyTracker()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+        <!-- Member Selector & Tracker -->
+        <div class="bg-slate-800 border border-slate-700/60 rounded-2xl p-4 shadow-lg mb-6">
+            <label class="block text-xs font-medium text-slate-300 mb-2">🔍 เลือกดูรายชื่อจอมยุทธ์:</label>
+            <select id="member-select" onchange="renderApp()" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
                 <option value="0">เจ้าชายจ้าวอี้พี</option>
                 <option value="1">เจ้าหญิงจ้าวอวี้บูม</option>
                 <option value="2">พระสนมเอกจ้าวซีแตงโม</option>
                 <option value="3">ท่านอ๋องจ้าวหลงเพ้ด</option>
                 <option value="4">องค์หญิงจ้าวซินเอนเจ</option>
             </select>
-            <div class="mt-4 flex justify-between items-center bg-orange-50 p-3 rounded-xl border border-orange-100 text-sm">
+
+            <div class="mt-4 flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
                 <div>
-                    <p class="text-slate-600">ยอดสะสมส่วนตัว:</p>
-                    <p class="font-bold text-orange-600 text-lg" id="selected-member-total">0 บาท</p>
+                    <p class="text-xs text-slate-400">ยอดสะสมส่วนตัว</p>
+                    <p id="member-total" class="text-lg font-bold text-emerald-400">0 บาท</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-slate-600">ชำระแล้ว:</p>
-                    <p class="font-semibold text-slate-800" id="selected-member-days">0 วัน</p>
+                    <p class="text-xs text-slate-400">ชำระแล้ว</p>
+                    <p id="member-days" class="text-sm font-semibold text-white">0 วัน</p>
                 </div>
             </div>
         </div>
 
-        <!-- ส่วนกดติ๊กรายวัน -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
+        <!-- Daily Grid Box -->
+        <div class="bg-slate-800 border border-slate-700/60 rounded-2xl p-4 shadow-lg mb-6">
             <div class="flex justify-between items-center mb-3">
-                <h2 class="font-semibold text-slate-700">📅 ตารางติ๊กรายวัน (วันละ 30 ฿)</h2>
-                <span id="current-selected-name" class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-medium">เจ้าชายจ้าวอี้พี</span>
+                <h3 class="text-sm font-semibold text-slate-200">📅 ตารางสะสมรายวัน (วันละ 30 บาท)</h3>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full">กดติ๊กเพื่อบันทึก</span>
             </div>
-            <div class="text-xs text-slate-400 mb-3">กดติ๊กแล้วข้อมูลจะบันทึกลงระบบกลางทันที เปิดเครื่องไหนก็เห็นตรงกัน</div>
-            <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 border border-slate-100 rounded-xl bg-slate-50"></div>
+            <div class="text-[11px] text-slate-400 mb-3">ข้อมูลจะอัปเดตตรงกันทุกเครื่องทันทีโดยอัตโนมัติ</div>
+            <div id="daily-grid" class="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto p-1 bg-slate-900/50 rounded-xl border border-slate-700/50"></div>
         </div>
 
-        <!-- สรุปภาพรวมรายบุคคล -->
-        <h2 class="font-semibold text-slate-700 mb-3">👑 สรุปยอดรวมทุกพระองค์ในสำนัก</h2>
-        <div class="space-y-3" id="member-summary-list"></div>
-    </main>
+        <!-- Summary List -->
+        <div class="bg-slate-800 border border-slate-700/60 rounded-2xl p-4 shadow-lg">
+            <h3 class="text-sm font-semibold text-slate-200 mb-3">👑 สรุปยอดรวมทุกพระองค์</h3>
+            <div id="summary-list" class="space-y-2.5"></div>
+        </div>
+    </div>
 
     <script>
-        const startDate = new Date(2026, 7, 3);   
-        const endDate = new Date(2027, 11, 1);    
+        const API_URL = "https://api.npoint.io/41c6fca6e6a18d1a1e0b"; // ฐานข้อมูลกลางใหม่ล่าสุด
+        const startDate = new Date(2026, 7, 3);
+        const endDate = new Date(2027, 11, 1);
         const dailyRate = 30;
         const targetTotal = 54000;
         const oneDayTime = 1000 * 60 * 60 * 24;
-        const totalProjectDays = Math.floor((endDate - startDate) / oneDayTime) + 1;
+        const totalDays = Math.floor((endDate - startDate) / oneDayTime) + 1;
 
-        let members = [
-            { name: "เจ้าชายจ้าวอี้พี", paidDays: {} },
-            { name: "เจ้าหญิงจ้าวอวี้บูม", paidDays: {} },
-            { name: "พระสนมเอกจ้าวซีแตงโม", paidDays: {} },
-            { name: "ท่านอ๋องจ้าวหลงเพ้ด", paidDays: {} },
-            { name: "องค์หญิงจ้าวซินเอนเจ", paidDays: {} }
+        let membersData = [
+            { name: "เจ้าชายจ้าวอี้พี", days: {} },
+            { name: "เจ้าหญิงจ้าวอวี้บูม", days: {} },
+            { name: "พระสนมเอกจ้าวซีแตงโม", days: {} },
+            { name: "ท่านอ๋องจ้าวหลงเพ้ด", days: {} },
+            { name: "องค์หญิงจ้าวซินเอนเจ", days: {} }
         ];
 
-        async function fetchSheetData() {
+        async function loadData() {
             try {
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
+                let res = await fetch(API_URL);
                 let json = await res.json();
-                let rows = json.record;
-                if (rows && Array.isArray(rows)) {
-                    rows.forEach((row, mIdx) => {
-                        if (members[mIdx] && Array.isArray(row)) {
-                            members[mIdx].paidDays = {};
-                            for (let i = 0; i < row.length; i++) {
-                                if (row[i] === true || row[i] === 1 || row[i] === "TRUE") {
-                                    members[mIdx].paidDays[i] = true;
-                                }
-                            }
+                if (json && Array.isArray(json)) {
+                    json.forEach((arr, mIdx) => {
+                        if (membersData[mIdx] && Array.isArray(arr)) {
+                            membersData[mIdx].days = {};
+                            arr.forEach((val, dIdx) => {
+                                if (val) membersData[mIdx].days[dIdx] = true;
+                            });
                         }
                     });
                 }
-                document.getElementById('sync-status').innerText = "🟢 ซิงค์ข้อมูลกับสำนักกลางเรียบร้อย";
-            } catch (err) {
-                console.error(err);
-                document.getElementById('sync-status').innerText = "🔴 ดึงข้อมูลจากส่วนกลางไม่สำเร็จ";
+                document.getElementById('sync-status').innerText = "🟢 เชื่อมต่อสำนักกลางเรียบร้อย";
+            } catch (e) {
+                document.getElementById('sync-status').innerText = "🔴 ดึงข้อมูลไม่สำเร็จ กรุณารีเฟรช";
             }
-            updateUI();
+            renderApp();
         }
 
-        async function saveSheetData() {
-            document.getElementById('sync-status').innerText = "💾 กำลังบันทึกข้อมูลลงสำนักกลาง...";
-            
-            let payload = members.map(m => {
-                let rowData = [];
-                for (let i = 0; i < totalProjectDays; i++) {
-                    rowData.push(m.paidDays[i] ? 1 : 0);
+        async function saveData() {
+            document.getElementById('sync-status').innerText = "💾 กำลังบันทึกข้อมูล...";
+            let payload = membersData.map(m => {
+                let row = [];
+                for (let i = 0; i < totalDays; i++) {
+                    row.push(m.days[i] ? 1 : 0);
                 }
-                return rowData;
+                return row;
             });
 
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลสำเร็จ (รีเฟรชเครื่องอื่นเห็นทันที)";
-            } catch (err) {
-                console.error(err);
-                document.getElementById('sync-status').innerText = "🔴 บันทึกข้อมูลไม่สำเร็จ";
+                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลสำเร็จ (ทุกคนเห็นตรงกัน)";
+            } catch (e) {
+                document.getElementById('sync-status').innerText = "🔴 บันทึกไม่สำเร็จ";
             }
         }
 
-        function formatDateString(dateObj) {
-            let options = { day: 'numeric', month: 'short', year: '2-digit' };
-            return dateObj.toLocaleDateString('th-TH', options);
+        function toggleDay(mIdx, dIdx) {
+            membersData[mIdx].days[dIdx] = !membersData[mIdx].days[dIdx];
+            renderApp();
+            saveData();
         }
 
-        function getTodayIndex() {
-            let today = new Date();
-            today.setHours(0,0,0,0);
-            let start = new Date(startDate);
-            start.setHours(0,0,0,0);
-            let diff = Math.floor((today - start) / oneDayTime);
-            if (diff < 0) return 0;
-            if (diff >= totalProjectDays) return totalProjectDays - 1;
-            return diff;
-        }
-
-        function updateUI() {
-            let grandTotal = 0;
-            let summaryHTML = '';
-            let todayIdx = getTodayIndex();
-            let todayDateObj = new Date(startDate.getTime() + (todayIdx * oneDayTime));
+        function renderApp() {
+            let mIdx = document.getElementById('member-select').value;
+            let currentMember = membersData[mIdx];
             
-            document.getElementById('today-date-str').innerText = formatDateString(todayDateObj);
+            let gridHtml = '';
+            let paidCount = 0;
 
-            let unpaidTodayList = [];
+            for (let i = 0; i < totalDays; i++) {
+                let isChecked = currentMember.days[i] || false;
+                if (isChecked) paidCount++;
+                let d = new Date(startDate.getTime() + (i * oneDayTime));
+                let dateStr = `${d.getDate()}/${d.getMonth()+1}`;
 
-            members.forEach((m, index) => {
-                let paidCount = Object.keys(m.paidDays).filter(k => m.paidDays[k]).length;
-                let memberTotal = paidCount * dailyRate;
-                grandTotal += memberTotal;
-
-                if (!m.paidDays[todayIdx]) {
-                    unpaidTodayList.push(m.name);
+                if (isChecked) {
+                    gridHtml += `<button onclick="toggleDay(${mIdx}, ${i})" class="p-2 text-xs rounded-xl bg-emerald-600 text-white font-medium shadow transition active:scale-95">
+                        <div>${i+1}</div>
+                        <div class="text-[9px] text-emerald-200">${dateStr}</div>
+                    </button>`;
+                } else {
+                    gridHtml += `<button onclick="toggleDay(${mIdx}, ${i})" class="p-2 text-xs rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:bg-slate-700 transition active:scale-95">
+                        <div>${i+1}</div>
+                        <div class="text-[9px] text-slate-500">${dateStr}</div>
+                    </button>`;
                 }
+            }
+            document.getElementById('daily-grid').innerHTML = gridHtml;
+            document.getElementById('member-total').innerText = (paidCount * dailyRate).toLocaleString() + ' บาท';
+            document.getElementById('member-days').innerText = `${paidCount} / ${totalDays} วัน`;
 
-                summaryHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            // Summary & Grand Total
+            let grandTotal = 0;
+            let summaryHtml = '';
+            membersData.forEach((m, idx) => {
+                let count = Object.values(m.days).filter(Boolean).length;
+                let total = count * dailyRate;
+                grandTotal += total;
+
+                summaryHtml += `
+                    <div class="flex justify-between items-center bg-slate-900/40 p-3 rounded-xl border border-slate-700/40">
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center font-bold text-orange-600">${m.name.charAt(4)}</div>
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-xs">${idx+1}</div>
                             <div>
-                                <h4 class="font-medium text-sm">${m.name}</h4>
-                                <p class="text-xs text-slate-500">จ่ายแล้ว ${paidCount} วัน (${memberTotal.toLocaleString()} บาท)</p>
+                                <p class="text-xs font-medium text-white">${m.name}</p>
+                                <p class="text-[10px] text-slate-400">จ่ายแล้ว ${count} วัน</p>
                             </div>
                         </div>
-                        <button onclick="selectMemberAndScroll(${index})" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-full font-medium hover:bg-slate-200 transition">จัดการรายวัน</button>
+                        <span class="text-xs font-bold text-emerald-400">${total.toLocaleString()} ฿</span>
                     </div>
                 `;
             });
 
-            let alertHtml = '';
-            if (unpaidTodayList.length === 0) {
-                alertHtml = `<p class="text-green-600 font-medium">🎉 ยอดเยี่ยม! วันนี้ทุกพระองค์ชำระส่วยครบหมดแล้ว!</p>`;
-            } else {
-                alertHtml = `<p class="text-red-600 font-medium">⚠️ สมาชิกที่ยังไม่ได้จ่ายของวันนี้ (${todayIdx + 1}):</p>
-                             <p class="font-semibold text-slate-700 mt-0.5">${unpaidTodayList.join(', ')}</p>`;
-            }
-            document.getElementById('alert-content').innerHTML = alertHtml;
-
+            document.getElementById('summary-list').innerHTML = summaryHtml;
             document.getElementById('total-fund').innerText = grandTotal.toLocaleString() + ' บาท';
-            document.getElementById('member-summary-list').innerHTML = summaryHTML;
-            let percent = (grandTotal / targetTotal) * 100;
-            document.getElementById('progress-bar').style.width = Math.min(percent, 100) + '%';
-            document.getElementById('progress-text').innerText = `จากเป้าหมายรวม ${targetTotal.toLocaleString()} บาท (ระยะเวลาเก็บ ${totalProjectDays} วัน)`;
-
-            renderDailyTracker();
+            let percent = Math.min((grandTotal / targetTotal) * 100, 100);
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-text').innerText = `${percent.toFixed(1)}% ของเป้าหมายรวม (${targetTotal.toLocaleString()} บาท)`;
         }
 
-        function selectMemberAndScroll(index) {
-            document.getElementById('member-select').value = index;
-            renderDailyTracker();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function renderDailyTracker() {
-            let memberIndex = document.getElementById('member-select').value;
-            let m = members[memberIndex];
-            document.getElementById('current-selected-name').innerText = m.name;
-
-            let gridHTML = '';
-            let paidCount = 0;
-
-            for (let i = 0; i < totalProjectDays; i++) {
-                let currentDayDate = new Date(startDate.getTime() + (i * oneDayTime));
-                let isPaid = m.paidDays[i] || false;
-                if (isPaid) paidCount++;
-                let dateShortStr = `${currentDayDate.getDate()}/${currentDayDate.getMonth() + 1}`;
-
-                if (isPaid) {
-                    gridHTML += `<button onclick="toggleDay(${memberIndex}, ${i})" class="p-2 text-xs font-medium rounded-xl bg-green-500 text-white shadow-sm transition transform active:scale-95" title="${formatDateString(currentDayDate)}">
-                        <div>${i+1}</div>
-                        <div class="text-[10px] opacity-90">${dateShortStr}</div>
-                    </button>`;
-                } else {
-                    gridHTML += `<button onclick="toggleDay(${memberIndex}, ${i})" class="p-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition transform active:scale-95" title="${formatDateString(currentDayDate)}">
-                        <div>${i+1}</div>
-                        <div class="text-[10px] text-slate-400">${dateShortStr}</div>
-                    </button>`;
-                }
-            }
-
-            document.getElementById('daily-grid').innerHTML = gridHTML;
-            document.getElementById('selected-member-total').innerText = (paidCount * dailyRate).toLocaleString() + ' บาท';
-            document.getElementById('selected-member-days').innerText = `${paidCount} วัน / (${totalProjectDays} วัน)`;
-        }
-
-        function toggleDay(memberIndex, dayIndex) {
-            let m = members[memberIndex];
-            m.paidDays[dayIndex] = !m.paidDays[dayIndex];
-            updateUI();
-            saveSheetData(); 
-        }
-
-        fetchSheetData();
+        loadData();
     </script>
 </body>
 </html>

@@ -70,7 +70,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = "jianghu_wallet_data_v3";
+        const STORAGE_KEY = "jianghu_wallet_data_v4";
         const startDate = new Date(2026, 7, 3);
         const endDate = new Date(2027, 11, 1);
         const dailyRate = 30;
@@ -86,7 +86,7 @@
             { name: "องค์หญิงจ้าวซินเอนเจ", paidDays: {} }
         ];
 
-        function loadData() {
+        function initApp() {
             try {
                 let saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
@@ -123,7 +123,9 @@
         }
 
         function renderApp() {
-            let mIdx = document.getElementById('member-select').value;
+            let selectElem = document.getElementById('member-select');
+            if (!selectElem) return;
+            let mIdx = selectElem.value;
             let currentMember = membersData[mIdx];
             
             let gridHtml = '';
@@ -180,7 +182,7 @@
             document.getElementById('progress-text').innerText = `${percent.toFixed(1)}% ของเป้าหมายรวม (${targetTotal.toLocaleString()} บาท)`;
         }
 
-        loadData();
+        initApp();
     </script>
 </body>
 </html>

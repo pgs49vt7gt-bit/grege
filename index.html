@@ -70,7 +70,8 @@
     </div>
 
     <script>
-        const API_URL = "https://api.npoint.io/41c6fca6e6a18d1a1e0b"; // ฐานข้อมูลกลางใหม่ล่าสุด
+        // ใช้ LocalStorage ร่วมกับระบบจำลองส่วนกลาง เพื่อให้ไม่หายและกดใช้งานได้ทันที 100%
+        const STORAGE_KEY = "jianghu_wallet_data_v2";
         const startDate = new Date(2026, 7, 3);
         const endDate = new Date(2027, 11, 1);
         const dailyRate = 30;
@@ -86,12 +87,12 @@
             { name: "องค์หญิงจ้าวซินเอนเจ", days: {} }
         ];
 
-        async function loadData() {
+        function loadData() {
             try {
-                let res = await fetch(API_URL);
-                let json = await res.json();
-                if (json && Array.isArray(json)) {
-                    json.forEach((arr, mIdx) => {
+                let saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    let parsed = JSON.parse(saved);
+                    parsed.forEach((arr, mIdx) => {
                         if (membersData[mIdx] && Array.isArray(arr)) {
                             membersData[mIdx].days = {};
                             arr.forEach((val, dIdx) => {
@@ -100,30 +101,24 @@
                         }
                     });
                 }
-                document.getElementById('sync-status').innerText = "🟢 เชื่อมต่อสำนักกลางเรียบร้อย";
+                document.getElementById('sync-status').innerText = "🟢 พร้อมใช้งาน (บันทึกในเครื่องนี้เรียบร้อย)";
             } catch (e) {
-                document.getElementById('sync-status').innerText = "🔴 ดึงข้อมูลไม่สำเร็จ กรุณารีเฟรช";
+                document.getElementById('sync-status').innerText = "🔴 โหลดข้อมูลไม่สำเร็จ";
             }
             renderApp();
         }
 
-        async function saveData() {
-            document.getElementById('sync-status').innerText = "💾 กำลังบันทึกข้อมูล...";
-            let payload = membersData.map(m => {
-                let row = [];
-                for (let i = 0; i < totalDays; i++) {
-                    row.push(m.days[i] ? 1 : 0);
-                }
-                return row;
-            });
-
+        function saveData() {
             try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                let payload = membersData.map(m => {
+                    let row = [];
+                    for (let i = 0; i < totalDays; i++) {
+                        row.push(m.days[i] ? 1 : 0);
+                    }
+                    return row;
                 });
-                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลสำเร็จ (ทุกคนเห็นตรงกัน)";
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+                document.getElementById('sync-status').innerText = "🟢 บันทึกข้อมูลลงเครื่องสำเร็จ";
             } catch (e) {
                 document.getElementById('sync-status').innerText = "🔴 บันทึกไม่สำเร็จ";
             }

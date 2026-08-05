@@ -9,11 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>body { font-family: 'Prompt', sans-serif; }</style>
 </head>
-<body class="bg-slate-50 min-p-4 py-8">
+<body class="bg-slate-50 min-h-screen py-8">
 
     <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 m-4">
         <h1 class="text-2xl font-bold text-slate-800 text-center mb-1">🎯 กองทุนแก๊ง 30 บาท/วัน</h1>
         <p class="text-xs text-slate-400 text-center mb-4">เริ่ม 3 ส.ค. 69 - 1 ธ.ค. 70 (ซิงค์เรียลไทม์)</p>
+
+        <!-- 💰 กล่องยอดสะสมรวมทั้งหมดตั้งแต่วันแรก -->
+        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-4 mb-4 text-white shadow-md">
+            <p class="text-xs text-emerald-100 font-medium">ยอดสะสมรวมทั้งหมด (ตั้งแต่เริ่มเก็บ)</p>
+            <p id="grandTotal" class="text-3xl font-bold mt-1">0 บาท</p>
+            <p id="totalDaysCount" class="text-xs text-emerald-100 mt-1">กำลังคำนวณ...</p>
+        </div>
 
         <!-- เลือกวันที่ -->
         <div class="mb-4">
@@ -25,7 +32,7 @@
         <!-- ยอดรวมของวันนั้น -->
         <div class="bg-indigo-50 rounded-xl p-4 mb-6 flex justify-between items-center">
             <div>
-                <p class="text-xs text-indigo-500 font-medium">ยอดรวมวันนี้</p>
+                <p class="text-xs text-indigo-500 font-medium">ยอดของวันนี้ที่เลือก</p>
                 <p id="dailyTotal" class="text-xl font-bold text-indigo-700">0 บาท</p>
             </div>
             <div class="text-right">
@@ -43,7 +50,7 @@
     <!-- Firebase SDK (Modular v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // 🔥 Firebase Config ของคุณ
         const firebaseConfig = {
@@ -64,26 +71,52 @@
         const memberListEl = document.getElementById("memberList");
         const dailyTotalEl = document.getElementById("dailyTotal");
         const paidCountEl = document.getElementById("paidCount");
+        const grandTotalEl = document.getElementById("grandTotal");
+        const totalDaysCountEl = document.getElementById("totalDaysCount");
 
-        // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบัน (หรือ 2026-08-03 ถ้าเพิ่งเริ่ม)
+        // ตั้งค่าวันที่เริ่มต้นเป็นวันนี้ (หรือ 2026-08-03 ถ้ามาก่อนหน้านั้น)
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.value = (todayStr >= "2026-08-03" && todayStr <= "2027-12-01") ? todayStr : "2026-08-03";
 
-        let unsubscribe = null;
+        let unsubscribeDaily = null;
+        let unsubscribeAll = null;
 
-        // ฟังก์ชันโหลดข้อมูลและฟังการเปลี่ยนแปลงแบบ Real-time
+        // 1. โหลดข้อมูลรายวันแบบ Real-time ตามวันที่เลือก
         function loadDataForDate(dateStr) {
-            if (unsubscribe) unsubscribe();
+            if (unsubscribeDaily) unsubscribeDaily();
 
             const docRef = doc(db, "daily_records", dateStr);
 
-            unsubscribe = onSnapshot(docRef, (docSnap) => {
+            unsubscribeDaily = onSnapshot(docRef, (docSnap) => {
                 let data = docSnap.exists() ? docSnap.data().payments || {} : {};
                 renderUI(data, dateStr);
             });
         }
 
-        // เรนเดอร์หน้าจอ HTML
+        // 2. คำนวณยอดรวมทั้งหมดจากทุกวันใน Database (สะสมตั้งแต่เริ่ม)
+        function listenGrandTotal() {
+            const colRef = collection(db, "daily_records");
+            
+            unsubscribeAll = onSnapshot(colRef, (snapshot) => {
+                let grandTotal = 0;
+                let totalPaidPeopleCount = 0;
+
+                snapshot.forEach((doc) => {
+                    const payments = doc.data().payments || {};
+                    Object.values(payments).forEach(isPaid => {
+                        if (isPaid) {
+                            grandTotal += 30;
+                            totalPaidPeopleCount++;
+                        }
+                    });
+                });
+
+                grandTotalEl.innerText = `${grandTotal.toLocaleString()} บาท`;
+                totalDaysCountEl.innerText = `เก็บครบแล้ว ${totalPaidPeopleCount} ครั้ง (จากสมาชิก 5 คน)`;
+            });
+        }
+
+        // เรนเดอร์หน้าจอ HTML รายวัน
         function renderUI(paymentsData, dateStr) {
             memberListEl.innerHTML = "";
             let paidCount = 0;
@@ -105,7 +138,7 @@
                     </button>
                 `;
 
-                // กดปุ่มเพื่อสลับสถานะ
+                // กดปุ่มเพื่อสลับสถานะ และบันทึกลง Firebase ทันที
                 div.querySelector("button").addEventListener("click", async () => {
                     const newStatus = !isPaid;
                     paymentsData[name] = newStatus;
@@ -129,8 +162,9 @@
             loadDataForDate(e.target.value);
         });
 
-        // โหลดข้อมูลวันแรกทันทีที่เปิดเว็บ
+        // เริ่มต้นทำงานเมื่อเปิดเว็บ
         loadDataForDate(dateInput.value);
+        listenGrandTotal();
     </script>
 </body>
 </html>
